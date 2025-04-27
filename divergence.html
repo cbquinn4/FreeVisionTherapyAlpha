@@ -25,9 +25,22 @@
             background-color: white;
             margin-top: 20px;
         }
+        #countdown-timer {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <div id="countdown-timer"></div>
     <p>Welcome! Set your timer between 1 and 10 minutes and begin your eye exercise session.</p>
     <label for="timer">Select duration (minutes):</label>
     <input type="number" id="timer" min="0" max="10" value="1">
@@ -44,72 +57,96 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-    const beginButton = document.getElementById('beginButton');
-    const timerInput = document.getElementById('timer');
-    const imageContainer = document.getElementById('imageContainer');
-    const chartContainer = document.getElementById('chartContainer');
-    const images = document.querySelectorAll('#imageContainer img');
+        const beginButton = document.getElementById('beginButton');
+        const timerInput = document.getElementById('timer');
+        const imageContainer = document.getElementById('imageContainer');
+        const chartContainer = document.getElementById('chartContainer');
+        const images = document.querySelectorAll('#imageContainer img');
+        const countdownTimer = document.getElementById("countdown-timer");
 
-    let isTimerRunning = false; // Flag to check if the timer is running
-    let marginDistance = 10; // Initial distance between images
+        let isTimerRunning = false; // Flag to check if the timer is running
+        let marginDistance = 10; // Initial distance between images
 
-    beginButton.addEventListener('click', () => {
-        document.body.style.backgroundColor = 'black';
-        document.body.style.color = 'white';
-        beginButton.style.display = 'none';
-        imageContainer.style.display = 'block';
+        function startCountdown(durationInSeconds) {
+            let timeRemaining = durationInSeconds;
 
-        const minutes = parseInt(timerInput.value);
-        const milliseconds = minutes * 60 * 1000;
-        isTimerRunning = true; // Set the timer running flag
+            // Display the timer and start updating it
+            countdownTimer.style.display = "block";
 
-        setTimeout(() => {
-            imageContainer.style.display = 'none';
-            chartContainer.style.display = 'block';
-            showChart();
-            isTimerRunning = false; // Reset the timer running flag
-        }, milliseconds);
-    });
+            const interval = setInterval(() => {
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
 
-    function showChart() {
-        const ctx = document.getElementById('performanceChart').getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Focus', 'Accuracy', 'Speed'],
-                datasets: [{
-                    label: 'Performance',
-                    data: [75, 85, 90],
-                    backgroundColor: ['red', 'green', 'blue']
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100
-                    }
+                countdownTimer.innerText = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+
+                if (timeRemaining <= 0) {
+                    clearInterval(interval);
+                    countdownTimer.style.display = "none"; // Hide timer when finished
                 }
-            }
-        });
-    }
 
-    // Event listener for key presses
-    document.addEventListener('keydown', (event) => {
-        if (!isTimerRunning) return; // Only execute if the timer is running
-
-        if (event.key === 'ArrowLeft') {
-            // Move images apart
-            marginDistance += 5;
-        } else if (['ArrowUp', 'ArrowRight', 'ArrowDown'].includes(event.key)) {
-            // Move images closer
-            marginDistance = Math.max(5, marginDistance - 5); // Ensure a minimum distance
+                timeRemaining -= 1;
+            }, 1000);
         }
 
-        // Update the margin for both images
-        images[0].style.marginRight = `${marginDistance}px`;
-        images[1].style.marginLeft = `${marginDistance}px`;
-    });
-</script>
+        beginButton.addEventListener('click', () => {
+            document.body.style.backgroundColor = 'black';
+            document.body.style.color = 'white';
+            beginButton.style.display = 'none';
+            imageContainer.style.display = 'block';
+
+            const minutes = parseInt(timerInput.value);
+            const milliseconds = minutes * 60 * 1000;
+            isTimerRunning = true;
+
+            startCountdown(minutes * 60); // Start the countdown timer
+
+            setTimeout(() => {
+                imageContainer.style.display = 'none';
+                chartContainer.style.display = 'block';
+                showChart();
+                isTimerRunning = false;
+            }, milliseconds);
+        });
+
+        function showChart() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Focus', 'Accuracy', 'Speed'],
+                    datasets: [{
+                        label: 'Performance',
+                        data: [75, 85, 90],
+                        backgroundColor: ['red', 'green', 'blue']
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        // Event listener for key presses
+        document.addEventListener('keydown', (event) => {
+            if (!isTimerRunning) return; // Only execute if the timer is running
+
+            if (event.key === 'ArrowLeft') {
+                // Move images apart
+                marginDistance += 5;
+            } else if (['ArrowUp', 'ArrowRight', 'ArrowDown'].includes(event.key)) {
+                // Move images closer
+                marginDistance = Math.max(5, marginDistance - 5); // Ensure a minimum distance
+            }
+
+            // Update the margin for both images
+            images[0].style.marginRight = `${marginDistance}px`;
+            images[1].style.marginLeft = `${marginDistance}px`;
+        });
+    </script>
 </body>
 </html>
