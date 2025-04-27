@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Exercise Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: white;
+            color: black;
+            margin: 0;
+            padding: 20px;
+        }
+        #imageContainer, #chartContainer {
+            display: none;
+            margin-top: 20px;
+        }
+        img {
+            width: 200px;
+            margin: 10px;
+        }
+        canvas {
+            background-color: white;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <p>Welcome! Set your timer between 1 and 10 minutes and begin your eye exercise session.</p>
+    <label for="timer">Select duration (minutes):</label>
+    <input type="number" id="timer" min="1" max="10" value="1">
+    <button id="beginButton">Begin</button>
+
+    <div id="imageContainer">
+        <img src="https://via.placeholder.com/200x200?text=Image+1" alt="Image 1">
+        <img src="https://via.placeholder.com/200x200?text=Image+2" alt="Image 2">
+    </div>
+
+    <div id="chartContainer">
+        <canvas id="performanceChart" width="400" height="200"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const beginButton = document.getElementById('beginButton');
+        const timerInput = document.getElementById('timer');
+        const imageContainer = document.getElementById('imageContainer');
+        const chartContainer = document.getElementById('chartContainer');
+
+        beginButton.addEventListener('click', () => {
+            document.body.style.backgroundColor = 'black';
+            document.body.style.color = 'white';
+            beginButton.style.display = 'none';
+            imageContainer.style.display = 'block';
+
+            const minutes = parseInt(timerInput.value);
+            const milliseconds = minutes * 60 * 1000;
+
+            setTimeout(() => {
+                imageContainer.style.display = 'none';
+                chartContainer.style.display = 'block';
+                showChart();
+            }, milliseconds);
+        });
+
+        function showChart() {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Focus', 'Accuracy', 'Speed'],
+                    datasets: [{
+                        label: 'Performance',
+                        data: [75, 85, 90],
+                        backgroundColor: ['red', 'green', 'blue']
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
