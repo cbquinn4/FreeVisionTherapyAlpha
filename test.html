@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Box Overlay Visual</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            margin: 20px;
+            border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Overlay Box Visualizer</h1>
+    <label>Blue Offset (px): <input type="number" id="blueOffset" value="0"></label><br>
+    <label>Red Offset (px): <input type="number" id="redOffset" value="0"></label><br>
+    <label>Box Size (px): <input type="number" id="boxSize" value="200"></label><br>
+    <button onclick="generate()">Generate</button>
+
+    <h2>Superimposed View</h2>
+    <canvas id="superimposedCanvas" width="400" height="400"></canvas>
+
+    <h2>Separated View</h2>
+    <canvas id="separatedCanvas" width="600" height="400"></canvas>
+
+    <script src="boxes.js"></script>
+</body>
+</html>
