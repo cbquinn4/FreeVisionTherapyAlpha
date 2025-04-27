@@ -3,9 +3,6 @@ function generate() {
     const redOffset = parseInt(document.getElementById('redOffset').value);
     const boxSize = parseInt(document.getElementById('boxSize').value);
 
-    const innerBoxSize = Math.floor(boxSize / 3);
-    const innerBoxPosition = ['top', 'bottom', 'left', 'right'][Math.floor(Math.random() * 4)];
-
     const canvasSuper = document.getElementById('superimposedCanvas');
     const ctxSuper = canvasSuper.getContext('2d');
 
@@ -15,38 +12,37 @@ function generate() {
     ctxSuper.clearRect(0, 0, canvasSuper.width, canvasSuper.height);
     ctxSep.clearRect(0, 0, canvasSep.width, canvasSep.height);
 
-    function drawBox(ctx, x, y, size, color) {
-        ctx.fillStyle = color;
-        ctx.fillRect(x, y, size, size);
+    function drawPixelPattern(ctx, x, y, size, color) {
+        for (let i = 0; i < size; i += 4) {
+            for (let j = 0; j < size; j += 4) {
+                if (Math.random() > 0.5) {
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x + i, y + j, 4, 4);
+                }
+            }
+        }
     }
 
     const centerX = canvasSuper.width / 2;
     const centerY = canvasSuper.height / 2;
 
-    // Superimposed view: draw blue first
-    ctxSuper.fillStyle = 'blue';
-    ctxSuper.fillRect(centerX - boxSize / 2 + blueOffset, centerY - boxSize / 2, boxSize, boxSize);
+    // Draw blue pixels
+    drawPixelPattern(ctxSuper, centerX - boxSize / 2 + blueOffset, centerY - boxSize / 2, boxSize, 'blue');
 
-    // Draw red and detect overlap
-    const redX = centerX - boxSize / 2 + redOffset;
-    const redY = centerY - boxSize / 2;
-    const overlapX = Math.max(centerX - boxSize / 2 + blueOffset, redX);
-    const overlapY = Math.max(centerY - boxSize / 2, redY);
-    const overlapWidth = Math.min(centerX - boxSize / 2 + blueOffset + boxSize, redX + boxSize) - overlapX;
-    const overlapHeight = Math.min(centerY - boxSize / 2 + boxSize, redY + boxSize) - overlapY;
+    // Draw red pixels
+    drawPixelPattern(ctxSuper, centerX - boxSize / 2 + redOffset, centerY - boxSize / 2, boxSize, 'red');
 
-    if (overlapWidth > 0 && overlapHeight > 0) {
-        // Draw overlap as purple
-        ctxSuper.fillStyle = 'purple';
-        ctxSuper.fillRect(overlapX, overlapY, overlapWidth, overlapHeight);
-    }
+    // Handle overlap and ensure 100% opacity
+    const imageData = ctxSuper.getImageData(0, 0, canvasSuper.width, canvasSuper.height);
+    const data = imageData.data;
 
-    // Draw red (non-overlapping)
-    ctxSuper.fillStyle = 'red';
-    ctxSuper.fillRect(redX, redY, boxSize, boxSize);
+    for (let i = 0; i < data.length; i += 4) {
+        const red = data[i];     // Red channel
+        const green = data[i+1]; // Green channel
+        const blue = data[i+2];  // Blue channel
+        const alpha = data[i+3]; // Alpha channel
 
-    // Separated view (side by side)
-    const sepY = canvasSep.height / 2 - boxSize / 2;
-    drawBox(ctxSep, canvasSep.width / 4 - boxSize / 2 + blueOffset, sepY, boxSize, 'blue');
-    drawBox(ctxSep, 3 * canvasSep.width / 4 - boxSize / 2 + redOffset, sepY, boxSize, 'red');
-}
+        if (red > 0 && blue > 0) {
+            // Overlapping red and blue -> make purple
+            data[i] = 128;    // Set red
+
