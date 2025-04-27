@@ -15,21 +15,31 @@ function generate() {
     ctxSuper.clearRect(0, 0, canvasSuper.width, canvasSuper.height);
     ctxSep.clearRect(0, 0, canvasSep.width, canvasSep.height);
 
-    function drawPixelPattern(ctx, x, y, size, color, opacity = 1.0) {
-        ctx.globalAlpha = opacity;
-        for (let i = 0; i < size; i += 4) {
-            for (let j = 0; j < size; j += 4) {
+    const pixelSize = 4;
+
+    // To track pixel positions for blending
+    let bluePixels = new Set();
+    let redPixels = new Set();
+
+    function drawPixelPattern(ctx, x, y, size, colorSet, label) {
+        for (let i = 0; i < size; i += pixelSize) {
+            for (let j = 0; j < size; j += pixelSize) {
                 if (Math.random() > 0.5) {
-                    ctx.fillStyle = color;
-                    ctx.fillRect(x + i, y + j, 4, 4);
+                    let px = Math.floor(x + i);
+                    let py = Math.floor(y + j);
+                    let key = `${px},${py}`;
+                    colorSet.add(key);
+                    if (ctx) {
+                        ctx.fillStyle = label;
+                        ctx.fillRect(px, py, pixelSize, pixelSize);
+                    }
                 }
             }
         }
-        ctx.globalAlpha = 1.0;
     }
 
-    function drawBox(ctx, x, y, size, color, opacity = 1.0, inner = false) {
-        drawPixelPattern(ctx, x, y, size, color, opacity);
+    function drawBox(ctx, x, y, size, colorSet, color, inner = false) {
+        drawPixelPattern(ctx, x, y, size, colorSet, color);
         if (inner) {
             let ix = x, iy = y;
             switch (innerBoxPosition) {
@@ -38,6 +48,15 @@ function generate() {
                 case 'left': ix = x; iy = y + (size - innerBoxSize) / 2; break;
                 case 'right': ix = x + size - innerBoxSize; iy = y + (size - innerBoxSize) / 2; break;
             }
+            // Remove pixels from the set in the inner box region (make transparent)
+            for (let i = 0; i < innerBoxSize; i += pixelSize) {
+                for (let j = 0; j < innerBoxSize; j += pixelSize) {
+                    let px = Math.floor(ix + i);
+                    let py = Math.floor(iy + j);
+                    let key = `${px},${py}`;
+                    colorSet.delete(key);
+                }
+            }
             ctx.clearRect(ix, iy, innerBoxSize, innerBoxSize);
         }
     }
@@ -45,13 +64,14 @@ function generate() {
     const centerX = canvasSuper.width / 2;
     const centerY = canvasSuper.height / 2;
 
-    // Superimposed view: draw blue first, then red
-    drawBox(ctxSuper, centerX - boxSize / 2 + blueOffset, centerY - boxSize / 2, boxSize, 'blue', 0.5);
-    drawBox(ctxSuper, centerX - boxSize / 2 + redOffset, centerY - boxSize / 2, boxSize, 'red', 0.5, true);
+    // Draw both boxes separately into sets (no drawing yet for superimposed view)
+    drawPixelPattern(null, centerX - boxSize / 2 + blueOffset, centerY - boxSize / 2, boxSize, bluePixels);
+    drawPixelPattern(null, centerX - boxSize / 2 + redOffset, centerY - boxSize / 2, boxSize, redPixels);
 
-    // Separated view (side by side)
-    const sepY = canvasSep.height / 2 - boxSize / 2;
-    drawBox(ctxSep, canvasSep.width / 4 - boxSize / 2 + blueOffset, sepY, boxSize, 'blue', 1.0);
-    drawBox(ctxSep, 3 * canvasSep.width / 4 - boxSize / 2 + redOffset, sepY, boxSize, 'red', 1.0, true);
-}
-
+    // Apply inner box transparency logic
+    function clearInnerBox(set, x, y, size) {
+        let ix = x, iy = y;
+        switch (innerBoxPosition) {
+            case 'top': iy = y; ix = x + (size - innerBoxSize) / 2; break;
+            case 'bottom': iy = y + size - innerBoxSize; ix = x + (size - innerBoxSize) / 2; break;
+            case 'left': ix = x; iy = y + (size - innerBoxSize) / 2; break;
