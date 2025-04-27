@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>3D Squares Interaction</title>
+    <title>3D Pixel Pattern Squares</title>
     <style>
         body {
             background-color: black;
@@ -26,23 +26,36 @@
         let offset = 0; // Current separation between squares
         const maxOffset = 100;
         const minOffset = -50;
-        const correctDirection = 'ArrowRight'; // Change this to 'ArrowLeft', 'ArrowUp', or 'ArrowDown'
+        const correctDirection = 'ArrowRight'; // Change based on your video
+
+        const squareSize = 150;
+        const pixelSize = 6;
+
+        function drawPixelPattern(ctx, x, y, size, color, offsetX) {
+            ctx.fillStyle = color;
+            for (let i = 0; i < size; i += pixelSize) {
+                for (let j = 0; j < size; j += pixelSize) {
+                    // Create checkerboard pattern
+                    if ((i / pixelSize + j / pixelSize) % 2 === 0) {
+                        ctx.fillRect(x + i + offsetX, y + j, pixelSize, pixelSize);
+                    }
+                }
+            }
+        }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             const centerX = canvas.width / 2;
             const centerY = canvas.height / 2;
-            const squareSize = 100;
 
             // Draw Red square shifted left
-            ctx.globalAlpha = 0.5;
-            ctx.fillStyle = 'red';
-            ctx.fillRect(centerX - squareSize / 2 - offset / 2, centerY - squareSize / 2, squareSize, squareSize);
+            ctx.globalAlpha = 0.6;
+            drawPixelPattern(ctx, centerX - squareSize / 2 - offset / 2, centerY - squareSize / 2, squareSize, 'red', 0);
 
             // Draw Blue square shifted right
-            ctx.fillStyle = 'blue';
-            ctx.fillRect(centerX - squareSize / 2 + offset / 2, centerY - squareSize / 2, squareSize, squareSize);
+            ctx.globalAlpha = 0.6;
+            drawPixelPattern(ctx, centerX - squareSize / 2 + offset / 2, centerY - squareSize / 2, squareSize, 'blue', 0);
 
             ctx.globalAlpha = 1.0;
         }
