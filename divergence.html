@@ -30,7 +30,7 @@
 <body>
     <p>Welcome! Set your timer between 1 and 10 minutes and begin your eye exercise session.</p>
     <label for="timer">Select duration (minutes):</label>
-    <input type="number" id="timer" min="1" max="10" value="1">
+    <input type="number" id="timer" min="0" max="10" value="1">
     <button id="beginButton">Begin</button>
 
     <div id="imageContainer">
@@ -39,7 +39,7 @@
     </div>
 
     <div id="chartContainer">
-        <canvas id="performanceChart" width="400" height="200"></canvas>
+        <canvas id="performanceChart" width="200" height="100"></canvas>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
