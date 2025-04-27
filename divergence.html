@@ -44,49 +44,72 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const beginButton = document.getElementById('beginButton');
-        const timerInput = document.getElementById('timer');
-        const imageContainer = document.getElementById('imageContainer');
-        const chartContainer = document.getElementById('chartContainer');
+    const beginButton = document.getElementById('beginButton');
+    const timerInput = document.getElementById('timer');
+    const imageContainer = document.getElementById('imageContainer');
+    const chartContainer = document.getElementById('chartContainer');
+    const images = document.querySelectorAll('#imageContainer img');
 
-        beginButton.addEventListener('click', () => {
-            document.body.style.backgroundColor = 'black';
-            document.body.style.color = 'white';
-            beginButton.style.display = 'none';
-            imageContainer.style.display = 'block';
+    let isTimerRunning = false; // Flag to check if the timer is running
+    let marginDistance = 10; // Initial distance between images
 
-            const minutes = parseInt(timerInput.value);
-            const milliseconds = minutes * 60 * 1000;
+    beginButton.addEventListener('click', () => {
+        document.body.style.backgroundColor = 'black';
+        document.body.style.color = 'white';
+        beginButton.style.display = 'none';
+        imageContainer.style.display = 'block';
 
-            setTimeout(() => {
-                imageContainer.style.display = 'none';
-                chartContainer.style.display = 'block';
-                showChart();
-            }, milliseconds);
-        });
+        const minutes = parseInt(timerInput.value);
+        const milliseconds = minutes * 60 * 1000;
+        isTimerRunning = true; // Set the timer running flag
 
-        function showChart() {
-            const ctx = document.getElementById('performanceChart').getContext('2d');
-            const chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Focus', 'Accuracy', 'Speed'],
-                    datasets: [{
-                        label: 'Performance',
-                        data: [75, 85, 90],
-                        backgroundColor: ['red', 'green', 'blue']
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100
-                        }
+        setTimeout(() => {
+            imageContainer.style.display = 'none';
+            chartContainer.style.display = 'block';
+            showChart();
+            isTimerRunning = false; // Reset the timer running flag
+        }, milliseconds);
+    });
+
+    function showChart() {
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Focus', 'Accuracy', 'Speed'],
+                datasets: [{
+                    label: 'Performance',
+                    data: [75, 85, 90],
+                    backgroundColor: ['red', 'green', 'blue']
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
                     }
                 }
-            });
+            }
+        });
+    }
+
+    // Event listener for key presses
+    document.addEventListener('keydown', (event) => {
+        if (!isTimerRunning) return; // Only execute if the timer is running
+
+        if (event.key === 'ArrowLeft') {
+            // Move images apart
+            marginDistance += 5;
+        } else if (['ArrowUp', 'ArrowRight', 'ArrowDown'].includes(event.key)) {
+            // Move images closer
+            marginDistance = Math.max(5, marginDistance - 5); // Ensure a minimum distance
         }
-    </script>
+
+        // Update the margin for both images
+        images[0].style.marginRight = `${marginDistance}px`;
+        images[1].style.marginLeft = `${marginDistance}px`;
+    });
+</script>
 </body>
 </html>
