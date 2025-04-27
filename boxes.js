@@ -1,77 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>3D Pixel Pattern Squares</title>
-    <style>
-        body {
-            background-color: black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        canvas {
-            background-color: black;
-        }
-    </style>
-</head>
-<body>
-    <canvas id="canvas" width="600" height="400"></canvas>
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
+function generate() {
+    const blueOffset = parseInt(document.getElementById('blueOffset').value);
+    const redOffset = parseInt(document.getElementById('redOffset').value);
+    const boxSize = parseInt(document.getElementById('boxSize').value);
 
-        let offset = 0; // Current separation between squares
-        const maxOffset = 100;
-        const minOffset = -50;
-        const correctDirection = 'ArrowRight'; // Change based on your video
+    const innerBoxSize = Math.floor(boxSize / 3);
+    const innerBoxPosition = ['top', 'bottom', 'left', 'right'][Math.floor(Math.random() * 4)];
 
-        const squareSize = 150;
-        const pixelSize = 6;
+    const canvasSuper = document.getElementById('superimposedCanvas');
+    const ctxSuper = canvasSuper.getContext('2d');
 
-        function drawPixelPattern(ctx, x, y, size, color, offsetX) {
-            ctx.fillStyle = color;
-            for (let i = 0; i < size; i += pixelSize) {
-                for (let j = 0; j < size; j += pixelSize) {
-                    // Create checkerboard pattern
-                    if ((i / pixelSize + j / pixelSize) % 2 === 0) {
-                        ctx.fillRect(x + i + offsetX, y + j, pixelSize, pixelSize);
-                    }
+    const canvasSep = document.getElementById('separatedCanvas');
+    const ctxSep = canvasSep.getContext('2d');
+
+    ctxSuper.clearRect(0, 0, canvasSuper.width, canvasSuper.height);
+    ctxSep.clearRect(0, 0, canvasSep.width, canvasSep.height);
+
+    function drawPixelPattern(ctx, x, y, size, color, opacity = 1.0) {
+        ctx.globalAlpha = opacity;
+        for (let i = 0; i < size; i += 4) {
+            for (let j = 0; j < size; j += 4) {
+                if (Math.random() > 0.5) {
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x + i, y + j, 4, 4);
                 }
             }
         }
+        ctx.globalAlpha = 1.0;
+    }
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-
-            // Draw Red square shifted left
-            ctx.globalAlpha = 0.6;
-            drawPixelPattern(ctx, centerX - squareSize / 2 - offset / 2, centerY - squareSize / 2, squareSize, 'red', 0);
-
-            // Draw Blue square shifted right
-            ctx.globalAlpha = 0.6;
-            drawPixelPattern(ctx, centerX - squareSize / 2 + offset / 2, centerY - squareSize / 2, squareSize, 'blue', 0);
-
-            ctx.globalAlpha = 1.0;
-        }
-
-        draw();
-
-        window.addEventListener('keydown', (e) => {
-            if (e.key === correctDirection) {
-                offset += 10;
-                if (offset > maxOffset) offset = maxOffset;
-            } else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-                offset -= 10;
-                if (offset < minOffset) offset = minOffset;
+    function drawBox(ctx, x, y, size, color, opacity = 1.0, inner = false) {
+        drawPixelPattern(ctx, x, y, size, color, opacity);
+        if (inner) {
+            let ix = x, iy = y;
+            switch (innerBoxPosition) {
+                case 'top': iy = y; ix = x + (size - innerBoxSize) / 2; break;
+                case 'bottom': iy = y + size - innerBoxSize; ix = x + (size - innerBoxSize) / 2; break;
+                case 'left': ix = x; iy = y + (size - innerBoxSize) / 2; break;
+                case 'right': ix = x + size - innerBoxSize; iy = y + (size - innerBoxSize) / 2; break;
             }
-            draw();
-        });
-    </script>
-</body>
-</html>
+            ctx.clearRect(ix, iy, innerBoxSize, innerBoxSize);
+        }
+    }
+
+    const centerX = canvasSuper.width / 2;
+    const centerY = canvasSuper.height / 2;
+
+    // Superimposed view: draw blue first, then red
+    drawBox(ctxSuper, centerX - boxSize / 2 + blueOffset, centerY - boxSize / 2, boxSize, 'blue', 0.5);
+    drawBox(ctxSuper, centerX - boxSize / 2 + redOffset, centerY - boxSize / 2, boxSize, 'red', 0.5, true);
+
+    // Separated view (side by side)
+    const sepY = canvasSep.height / 2 - boxSize / 2;
+    drawBox(ctxSep, canvasSep.width / 4 - boxSize / 2 + blueOffset, sepY, boxSize, 'blue', 1.0);
+    drawBox(ctxSep, 3 * canvasSep.width / 4 - boxSize / 2 + redOffset, sepY, boxSize, 'red', 1.0, true);
+}
