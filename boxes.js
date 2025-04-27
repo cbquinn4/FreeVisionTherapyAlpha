@@ -16,17 +16,20 @@ function generate() {
     ctxSuper.clearRect(0, 0, canvasSuper.width, canvasSuper.height);
     ctxSep.clearRect(0, 0, canvasSep.width, canvasSep.height);
 
-    // Generate pixel pattern background
+    // Generate pixel pattern background with transparent "black"
     function drawPixelPattern(ctx, x, y, size, color) {
         for (let i = 0; i < size; i += 4) {
             for (let j = 0; j < size; j += 4) {
-                ctx.fillStyle = Math.random() > 0.5 ? color : 'black';
-                ctx.fillRect(x + i, y + j, 4, 4);
+                if (Math.random() > 0.5) {
+                    ctx.fillStyle = color;
+                    ctx.fillRect(x + i, y + j, 4, 4);
+                }
+                // Else: do nothing (transparent)
             }
         }
     }
 
-    // Draw blue box
+    // Draw box with optional transparent inner area
     function drawBox(ctx, x, y, size, color, inner = false) {
         drawPixelPattern(ctx, x, y, size, color);
         if (inner) {
@@ -37,7 +40,8 @@ function generate() {
                 case 'left': ix = x; iy = y + (size - innerBoxSize) / 2; break;
                 case 'right': ix = x + size - innerBoxSize; iy = y + (size - innerBoxSize) / 2; break;
             }
-            drawPixelPattern(ctx, ix, iy, innerBoxSize, 'black');
+            // Clear (make transparent) the inner box area
+            ctx.clearRect(ix, iy, innerBoxSize, innerBoxSize);
         }
     }
 
@@ -53,3 +57,4 @@ function generate() {
     drawBox(ctxSep, canvasSep.width / 4 - boxSize / 2 + blueOffset, sepY, boxSize, 'blue');
     drawBox(ctxSep, 3 * canvasSep.width / 4 - boxSize / 2 + redOffset, sepY, boxSize, 'red', true);
 }
+
